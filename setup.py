@@ -95,6 +95,7 @@ setup_args = dict(
         'kfp-tekton==0.6.0',
         # Airflow runtime dependencies
         'pygithub',
+        'python-gitlab',
         'black'
     ],
     extras_require={

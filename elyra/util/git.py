@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from github import Github, GithubException
+from gitlab import Gitlab, GitlabException
 from traitlets.config import LoggingConfigurable
 from typing import Optional
 from urllib3.util import parse_url
@@ -46,11 +46,11 @@ class GithubClient(LoggingConfigurable):
         self.server_url = server_url.rstrip('/')
         self.repo_name = repo
         self.branch = branch
-        self.client = Github(login_or_token=token, base_url=self.server_url)
+        self.client = Gitlab(login_or_token=token, base_url=self.server_url)
 
         try:
             self.github_repository = self.client.get_repo(self.repo_name)
-        except GithubException as e:
+        except GitlabException as e:
             self.log.error(f'Error accessing repository {self.repo_name}: {e.data["message"]} ({e.status})')
             raise RuntimeError(f'Error accessing repository {self.repo_name}: {e.data["message"]} ({e.status}). ' +
                                'Please validate your runtime configuration details and retry.') from e
@@ -79,7 +79,7 @@ class GithubClient(LoggingConfigurable):
         except FileNotFoundError as fnfe:
             self.log.error(f'Unable to locate local DAG file to upload: {pipeline_filepath}: ' + str(fnfe))
             raise RuntimeError(f'Unable to locate local DAG file to upload: {pipeline_filepath}: {str(fnfe)}') from fnfe
-        except GithubException as e:
+        except GitlabException as e:
             self.log.error(f'Error uploading DAG to branch {self.branch}: {e.data["message"]} ({e.status})')
             raise RuntimeError(f'Error uploading DAG to branch {self.branch}: {e.data["message"]} ({e.status}). ' +
                                'Please validate your runtime configuration details and retry.') from e
