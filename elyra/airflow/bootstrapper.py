@@ -220,8 +220,22 @@ class NotebookFileOp(FileOpBase):
             t0 = time.time()
             # Really hate to do this but have to invoke Papermill via library as workaround
             import papermill
+            from jupyter_server.gateway.managers import GatewayClient
 
-            papermill.execute_notebook(notebook, notebook_output)
+            if GatewayClient.instance().gateway_enabled:
+                envs = os.environ.copy()
+                kwargs = {
+                    "engine_name": "ElyraEngine",
+                    "kernel_env": envs,
+                    "kernel_manager_class": "jupyter_server.gateway.managers.GatewayKernelManager",
+                }
+                papermill.execute_notebook(
+                    notebook,
+                    notebook_output,
+                    **kwargs,
+                )
+            else:
+                papermill.execute_notebook(notebook, notebook_output)
             duration = time.time() - t0
             OpUtil.log_operation_info("notebook execution completed", duration)
 

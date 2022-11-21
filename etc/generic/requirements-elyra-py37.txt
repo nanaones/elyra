@@ -15,6 +15,7 @@ requests==2.27.1
 tornado==6.1
 traitlets==5.2.0
 urllib3==1.26.9
+elyra
 #
 # These excluded are transitive dependencies of the included python packages.
 #ansiwrap==0.8.4
