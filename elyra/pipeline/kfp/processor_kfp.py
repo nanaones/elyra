@@ -36,6 +36,7 @@ from urllib.parse import urlsplit
 from autopep8 import fix_code
 from jinja2 import Environment
 from jinja2 import PackageLoader
+from jinja2 import FileSystemLoader
 from kfp import Client as ArgoClient
 from kfp import compiler as kfp_argo_compiler
 from kfp import components as components
@@ -533,14 +534,21 @@ class KfpPipelineProcessor(RuntimePipelineProcessor):
         Generate Python DSL for Kubeflow Pipelines v1
         """
 
-        # Load Kubeflow Pipelines Python DSL template
-        loader = PackageLoader("elyra", "templates/kubeflow/v1")
+        TEMPLATE_FOLDER_PATH = os.environ.get("TEMPLATE_FOLDER_PATH", False)
+        TEMPLATE_FILE = os.environ.get("TEMPLATE_FILE", "python_dsl_template.jinja2")
+
+        if TEMPLATE_FOLDER_PATH:
+            loader = FileSystemLoader(searchpath=TEMPLATE_FOLDER_PATH)
+        else:
+            # Load Kubeflow Pipelines Python DSL template
+            loader = PackageLoader("elyra", "templates/kubeflow/v1")
+
         template_env = Environment(loader=loader)
         # Add filter that produces a Python-safe variable name
         template_env.filters["python_safe"] = lambda x: re.sub(r"[" + re.escape(string.punctuation) + "\\s]", "_", x)
         # Add filter that escapes the " character in strings
         template_env.filters["string_delimiter_safe"] = lambda string: re.sub('"', '\\"', string)
-        template = template_env.get_template("python_dsl_template.jinja2")
+        template = template_env.get_template(TEMPLATE_FILE)
 
         # Convert pipeline into workflow tasks
         workflow_tasks = self._generate_workflow_tasks(
